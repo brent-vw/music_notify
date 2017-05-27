@@ -11,13 +11,13 @@ public class AlarmController {
 
     @PostMapping
     public ResponseEntity<Object> postAlarm(){
-        new MidiPlayer().play();
+        new Thread(()->new MidiPlayer().play()).start();
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
     public ResponseEntity<Object> getAlarm(){
-        new MidiPlayer().play();
+        new Thread(()->new MidiPlayer().play()).start();
         return ResponseEntity.ok().build();
     }
 }

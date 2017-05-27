@@ -61,21 +61,10 @@ public class MidiPlayer {
         try {
         //find the suitable device number here, based on some criteria
             Receiver MidiOutReceiver = in.getReceiver();
-            ShortMessage myMsg = new ShortMessage();
-            // Start playing the note Middle C (60),
-            // moderately loud (velocity = 93).
-            myMsg.setMessage(ShortMessage.NOTE_ON, 0, 60, 93);
-            long timeStamp = -1;
-            MidiOutReceiver.send(myMsg, timeStamp);
-
-
-
             Sequencer MidiOutSequencer = MidiSystem.getSequencer();
             //Add the new MIDI out device here.
             MidiOutSequencer.open();
-            Receiver a = MidiOutSequencer.getTransmitter().getReceiver();
             MidiOutSequencer.getTransmitter().setReceiver(MidiOutReceiver);
-            Receiver b = MidiOutSequencer.getTransmitter().getReceiver();
             MidiOutSequencer.setSequence(new FileInputStream(midiFile));
 
             MidiOutSequencer.start();
@@ -96,9 +85,7 @@ public class MidiPlayer {
         } catch(MidiUnavailableException mue) {
             mue.printStackTrace();
             System.out.println("Midi device unavailable!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InvalidMidiDataException e) {
+        } catch (IOException | InvalidMidiDataException e) {
             e.printStackTrace();
         }
 
