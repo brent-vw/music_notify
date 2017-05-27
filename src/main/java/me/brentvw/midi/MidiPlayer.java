@@ -1,26 +1,22 @@
 package me.brentvw.midi;
 
-import com.sun.org.apache.regexp.internal.RE;
+import org.springframework.stereotype.Component;
 
 import javax.sound.midi.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
+@Component
 public class MidiPlayer {
-    private MidiDevice out;
-    private MidiDevice in;
-
+    private Sequencer sequencer;
     public MidiPlayer(){
-        try {
+        /*try {
             listTransmitterDevices();
             getInputDevice();
         } catch (MidiUnavailableException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
 
@@ -31,7 +27,7 @@ public class MidiPlayer {
             MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
             if (device.getMaxTransmitters() != 0){
                 if(device.getDeviceInfo().getName().contains("Piano")){
-                   out = device;
+                   //out = device;
                     System.out.println(device.getDeviceInfo());
                 }
             }
@@ -47,7 +43,7 @@ public class MidiPlayer {
             MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
             if (device.getMaxReceivers() != 0) {
                 if(device.getDeviceInfo().getName().contains("Piano")) {
-                    in = device;
+                    //in = device;
                     System.out.println(device.getDeviceInfo());
                 }
             }
@@ -55,21 +51,24 @@ public class MidiPlayer {
     }
 
     public void play(){
+        if(isPlaying()){
+            return;
+        }
         File midiFile = new File(getClass().getClassLoader().getResource("clairdelune.mid").getFile());
 
         // Play once
         try {
         //find the suitable device number here, based on some criteria
-            Receiver MidiOutReceiver = in.getReceiver();
-            Sequencer MidiOutSequencer = MidiSystem.getSequencer();
+            //Receiver MidiOutReceiver = in.getReceiver();
+            this.sequencer = MidiSystem.getSequencer();
             //Add the new MIDI out device here.
-            MidiOutSequencer.open();
-            MidiOutSequencer.getTransmitter().setReceiver(MidiOutReceiver);
-            MidiOutSequencer.setSequence(new FileInputStream(midiFile));
+            sequencer.open();
+            //sequencer.getTransmitter().setReceiver(MidiOutReceiver);
+            sequencer.setSequence(new FileInputStream(midiFile));
 
-            MidiOutSequencer.start();
+            sequencer.start();
             while(true) {
-                if(MidiOutSequencer.isRunning()) {
+                if(sequencer.isRunning()) {
                     try {
                         Thread.sleep(1000); // Check every second
                     } catch(InterruptedException ignore) {
@@ -80,8 +79,8 @@ public class MidiPlayer {
                 }
             }
             // Close the MidiDevice & free resources
-            MidiOutSequencer.stop();
-            MidiOutSequencer.close();
+            sequencer.stop();
+            sequencer.close();
         } catch(MidiUnavailableException mue) {
             mue.printStackTrace();
             System.out.println("Midi device unavailable!");
@@ -89,5 +88,25 @@ public class MidiPlayer {
             e.printStackTrace();
         }
 
+    }
+
+    public void stop(){
+        if(sequencer !=null){
+            if(sequencer.isRunning()){
+                sequencer.stop();
+            }
+        }
+    }
+
+    private boolean isPlaying() {
+        return sequencer != null && sequencer.isRunning();
+    }
+
+    public Sequencer getSequencer() {
+        return sequencer;
+    }
+
+    public void setSequencer(Sequencer sequencer) {
+        this.sequencer = sequencer;
     }
 }
